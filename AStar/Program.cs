@@ -7,6 +7,8 @@ List<Cellule> FileAttente = new List<Cellule>();
 //Cout estimer selon la distance de manhattan (Ne prend pas en compte la diagonale)
 int CoutEstimer;
 
+Cellule CellATraite;
+
 //Définition du départ et de l'arriver
 Cellule Depart = new Cellule(0, 0, 0);
 Cellule Arriver = new Cellule(7, 9, 0);
@@ -19,7 +21,19 @@ CoutEstimer = CalculHeuristique(Depart, Arriver);
 //Algo A*
 while(FileAttente.Count > 0)
 {
-    DetermineCellPrioritaire();
+    CellATraite = DetermineCellPrioritaire(CoutEstimer);
+    if (CellATraite.Equals(Arriver))
+    {
+        break;
+    }
+    else
+    {
+        //Regarder les voisins de la cellule en cours
+        //
+            //Pas parcourue
+        //Sinon
+            //Ajout voisin dans file attente
+    }
 }
 
 
@@ -54,7 +68,7 @@ static void VerificationConditionChemin()
 
 }
 
-static void DetermineCellPrioritaire()
+static Cellule DetermineCellPrioritaire(int CoutEstimer)
 {
 
     /*
@@ -69,9 +83,9 @@ static void DetermineCellPrioritaire()
             CellMaxCout = Cell;
         }
     }
-
-    return CellMaxCout;
     */
+    return null;
+    
 }
 
 static void ReconstitutionChemin()

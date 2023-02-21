@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\sebas\\Documents\\LP RGI\\Algo\\Delpeche\\AStar\\AStar\\AStar.csproj",
+      "projectUniqueName": "C:\\Users\\sebas\\Documents\\LP RGI\\Algo\\Delpeche\\AStar\\Algo_AStar\\AStar\\AStar.csproj",
       "projectName": "AStar",
-      "projectPath": "C:\\Users\\sebas\\Documents\\LP RGI\\Algo\\Delpeche\\AStar\\AStar\\AStar.csproj",
+      "projectPath": "C:\\Users\\sebas\\Documents\\LP RGI\\Algo\\Delpeche\\AStar\\Algo_AStar\\AStar\\AStar.csproj",
       "packagesPath": "C:\\Users\\sebas\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\sebas\\Documents\\LP RGI\\Algo\\Delpeche\\AStar\\AStar\\obj\\",
+      "outputPath": "C:\\Users\\sebas\\Documents\\LP RGI\\Algo\\Delpeche\\AStar\\Algo_AStar\\AStar\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
