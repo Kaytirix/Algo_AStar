@@ -2,10 +2,13 @@
 #region Main
 int[,] LeTerrain = ConstructionTerrain();
 
+//Creation d'un tableau comportant tous les couts d'accès des cellules déjà visitées
+int[,] TabHistoriqueCout = CreationTabHistoriqueCout(LeTerrain);
+
 //Liste stockant toutes les cellules à traité au fur et mesure de la découverte de l'environnement par le programme
 List<Cellule> FileAttente = new List<Cellule>();
 
-
+//Liste de tous les voisins autours de la cellule à traiter
 List<Cellule> ListVoisin = new List<Cellule>();
 
 //Cout estimer selon la distance de manhattan (Ne prend pas en compte la diagonale)
@@ -34,7 +37,8 @@ while(FileAttente.Count > 0)
     //Si le programme atteint l'arriver
     if (CellATraite.Equals(Arriver))
     {
-        //ReconstitutionChemin()
+        Console.WriteLine("Le chemin le plus a été trouvé ! Le voici : \n");
+        ReconstitutionChemin(CellATraite);
         break;
     }
     else
@@ -42,19 +46,27 @@ while(FileAttente.Count > 0)
 
         ListVoisin = ParcoursVoisin(CellATraite, LeTerrain);
 
-        if(ListVoisin.Count > 0)
+        if (ListVoisin.Count > 0)
         {
-            //Si le voisin est accessible à un cout plus faible -> Sol avoir une liste de toute les cellules parcours en mémoire
-            //Pas parcouru
-        //Sinon
-            //Ajout voisin dans file attente
+            foreach (Cellule CellVoisin in ListVoisin)
+            {
+                if (!VoisinAccesPlusFaibleCout(CellVoisin, TabHistoriqueCout))
+                {
+                    //C'est pas plus faible
+                    //Soit on a pas parcouru la cell soit le cout est de ce voisin est plus faible
 
-            //A REFLECHIR
-            //Si le voisin accessible à un moindre cout
-                //Modifier le predecesseur enregistrer pour le voisin
+                    FileAttente.Add(CellVoisin);
+                    ListVoisin.Remove(CellVoisin);
+
+                    //La redéfinission de prédécesseur ce fait déjà car on recrée toujours de nouvelles cellules voisins même si l'a déjà parcourue
+                    CellVoisin.GetParent = CellATraite;
+                }
+                else
+                {
+                    ListVoisin.Remove(CellVoisin);
+                }
+            }
         }
-
-        
     }
 }
 #endregion
@@ -108,6 +120,31 @@ List<Cellule> ParcoursVoisin(Cellule CellActuel, int[,]LeTerrain)
     return ListVoisin;
 }
 
+//Vérifie si la cellule voisine est accéssible à un cout plus faible
+static bool VoisinAccesPlusFaibleCout(Cellule CellVoisin, int[,] TabHistoriqueCout)
+{
+    bool CoutPlusFaible;
+
+    //0 est la valeur par défaut car seul le départ peut avoir un cout à 0
+    if (TabHistoriqueCout[CellVoisin.GetX, CellVoisin.GetY] != 0)
+    {
+        if (CellVoisin.GetCout <= TabHistoriqueCout[CellVoisin.GetX, CellVoisin.GetY])
+        {
+            CoutPlusFaible = true;
+        }
+        else
+        {
+            CoutPlusFaible = false;
+        }
+    }
+    else
+    {
+        CoutPlusFaible = false;
+    }
+
+    return CoutPlusFaible;
+}
+
 //Vérifie si la cellule est accessible (valeur non égale à -1)
 void VerificationConditionChemin(int[,] LeTerrain, int PositionX, int PositionY, Cellule CellActuel,List<Cellule> ListVoisin)
 {
@@ -143,9 +180,14 @@ Cellule DetermineCellPrioritaire(int CoutEstimer, List<Cellule> FileAttente)
     return CellMaxCout; 
 }
 
-static void ReconstitutionChemin()
+//Reconstitue le chemin
+static void ReconstitutionChemin(Cellule Cellule)
 {
-
+    Console.Write("(" + Cellule.GetParent.GetX + "," + Cellule.GetParent.GetY + ")");
+    if(Cellule.GetParent != null)
+    {
+        ReconstitutionChemin(Cellule.GetParent);
+    }
 }
 
 //Construit le terrain permettant d'effectuer les tests
@@ -166,6 +208,29 @@ static int[,] ConstructionTerrain()
     return Terrain;
 }
 
+//Initialise le tableau stockant tous les couts des cellues parcours à 0
+static int[,] CreationTabHistoriqueCout(int[,] LeTerrainBase)
+{
+    int[,] TabHistoriqueCout;
+    int Nbligne;
+    int NbColonne;
+
+    Nbligne = LeTerrainBase.GetLength(0);
+    NbColonne = LeTerrainBase.GetLength(1);
+
+    TabHistoriqueCout = new int[NbColonne, Nbligne];
+
+    for(int Ligne = 0; Ligne <= Nbligne; Ligne++)
+    {
+        for (int Colonne = 0; Colonne <= NbColonne; Colonne++)
+        {
+            TabHistoriqueCout[Colonne, Ligne] = 0;
+        }
+    }
+
+    return TabHistoriqueCout;
+}
+
 #region Class Cellule
 public class Cellule
 {
@@ -180,6 +245,7 @@ public class Cellule
         this.x = x;
         this.y = y;
         Cout = cout;
+        CellParent = null;
     }
 
     public int GetCout { get; set; }
