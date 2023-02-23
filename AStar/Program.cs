@@ -5,6 +5,9 @@ int[,] LeTerrain = ConstructionTerrain();
 //Liste stockant toutes les cellules à traité au fur et mesure de la découverte de l'environnement par le programme
 List<Cellule> FileAttente = new List<Cellule>();
 
+
+List<Cellule> ListVoisin = new List<Cellule>();
+
 //Cout estimer selon la distance de manhattan (Ne prend pas en compte la diagonale)
 int CoutEstimer;
 
@@ -37,10 +40,11 @@ while(FileAttente.Count > 0)
     else
     {
 
-        ParcoursVoisin(CellATraite, LeTerrain);
+        ListVoisin = ParcoursVoisin(CellATraite, LeTerrain);
 
-
-        //Si le voisin est accessible à un cout plus faible -> Sol avoir une liste de toute les cellules parcours en mémoire
+        if(ListVoisin.Count > 0)
+        {
+            //Si le voisin est accessible à un cout plus faible -> Sol avoir une liste de toute les cellules parcours en mémoire
             //Pas parcouru
         //Sinon
             //Ajout voisin dans file attente
@@ -48,6 +52,9 @@ while(FileAttente.Count > 0)
             //A REFLECHIR
             //Si le voisin accessible à un moindre cout
                 //Modifier le predecesseur enregistrer pour le voisin
+        }
+
+        
     }
 }
 #endregion
@@ -76,9 +83,9 @@ static int CalculHeuristique(Cellule Depart, Cellule Arriver)
 }
 
 //Liste tout les voisins autour de la cellule actuel
-void ParcoursVoisin(Cellule CellActuel, int[,]LeTerrain)
+List<Cellule> ParcoursVoisin(Cellule CellActuel, int[,]LeTerrain)
 {
-    //Note : ajouter toute les cellule créé à une liste et faire retourner cette liste de voisin
+    List<Cellule> ListVoisin = new List<Cellule>();
 
     int PositionX;
     int PositionY;
@@ -86,64 +93,35 @@ void ParcoursVoisin(Cellule CellActuel, int[,]LeTerrain)
     PositionX = CellActuel.GetX;
     PositionY = CellActuel.GetY;
 
-    //POSSIBILITE D'OPTIMISER CE CODE CAR REPETITIF
-
     //Vérification du voisin SUD
-    if (VerificationConditionChemin(LeTerrain[PositionX, PositionY - 1]))
-    {
-        //Si le voisin n'est pas le prédécesseur de la cellule que nous traitons
-        if( (PositionX != CellActuel.GetParent.GetX) && (PositionY -1 != CellActuel.GetParent.GetY) )
-        {
-            //On crée la cellule selon les coordonnées du voisin SUD avec le cout (cout = cout CelleActuel + 1 + la valeur du voisin (0,1,2,3))
-            Cellule CellSud = new Cellule(PositionX, PositionY - 1, CalculCout(CellActuel.GetCout, LeTerrain[PositionX, PositionY - 1]));
-        }
-    }
+    VerificationConditionChemin(LeTerrain,PositionX, PositionY - 1, CellActuel, ListVoisin);
 
     //Vérification du voisin NORD
-    if (VerificationConditionChemin(LeTerrain[PositionX, PositionY + 1]))
-    {
-        //Si le voisin n'est pas le prédécesseur de la cellule que nous traitons
-        if ((PositionX != CellActuel.GetParent.GetX) && (PositionY + 1 != CellActuel.GetParent.GetY))
-        {
-            //On crée la cellule selon les coordonnées du voisin NORD avec le cout (cout = cout CelleActuel + 1 + la valeur du voisin (0,1,2,3))
-            Cellule CellNord = new Cellule(PositionX, PositionY + 1, CalculCout(CellActuel.GetCout, LeTerrain[PositionX, PositionY + 1]));
-        }
-    }
+    VerificationConditionChemin(LeTerrain,PositionX, PositionY + 1, CellActuel, ListVoisin);
 
     //Vérification du voisin EST
-    if (VerificationConditionChemin(LeTerrain[PositionX + 1, PositionY]))
-    {
-        //Si le voisin n'est pas le prédécesseur de la cellule que nous traitons
-        if ((PositionX +1 != CellActuel.GetParent.GetX) && (PositionY != CellActuel.GetParent.GetY))
-        {
-            //On crée la cellule selon les coordonnées du voisin EST avec le cout (cout = cout CelleActuel + 1 + la valeur du voisin (0,1,2,3))
-            Cellule CellEst = new Cellule(PositionX + 1, PositionY, CalculCout(CellActuel.GetCout, LeTerrain[PositionX + 1, PositionY]));
-        }
-    }
+    VerificationConditionChemin(LeTerrain, PositionX + 1, PositionY, CellActuel, ListVoisin);
 
     //Vérification du voisin OUEST
-    if (VerificationConditionChemin(LeTerrain[PositionX - 1, PositionY]))
-    {
-        //Si le voisin n'est pas le prédécesseur de la cellule que nous traitons
-        if ((PositionX - 1 != CellActuel.GetParent.GetX) && (PositionY != CellActuel.GetParent.GetY))
-        {
-            //On crée la cellule selon les coordonnées du voisin OUEST avec le cout (cout = cout CelleActuel + 1 + la valeur du voisin (0,1,2,3))
-            Cellule CellOuest = new Cellule(PositionX - 1, PositionY, CalculCout(CellActuel.GetCout, LeTerrain[PositionX - 1, PositionY]));
-        }
-    }
+    VerificationConditionChemin(LeTerrain, PositionX - 1, PositionY, CellActuel, ListVoisin);
+
+    return ListVoisin;
 }
 
 //Vérifie si la cellule est accessible (valeur non égale à -1)
-bool VerificationConditionChemin(int ValeurCellule)
+void VerificationConditionChemin(int[,] LeTerrain, int PositionX, int PositionY, Cellule CellActuel,List<Cellule> ListVoisin)
 {
-    bool CellAccessible = true;
 
-    if (ValeurCellule == -1)
+    if (LeTerrain[PositionX, PositionY] != -1)
     {
-        CellAccessible = false;
+        //Si le voisin n'est pas le prédécesseur de la cellule que nous traitons
+        if ((PositionX != CellActuel.GetParent.GetX) && (PositionY != CellActuel.GetParent.GetY))
+        {
+            //On crée la cellule selon les coordonnées du voisin avec le cout (cout = cout CelleActuel + 1 + la valeur du voisin (0,1,2,3))
+            Cellule CellVoisin = new Cellule(PositionX, PositionY, CalculCout(CellActuel.GetCout, LeTerrain[PositionX, PositionY]));
+            ListVoisin.Add(CellVoisin);
+        }
     }
-
-    return CellAccessible;
 }
 
 //Détermine, parmis toutes les cellules à traité, la quelle est prioritaire
