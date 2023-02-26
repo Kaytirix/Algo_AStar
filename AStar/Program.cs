@@ -26,16 +26,23 @@ FileAttente.Add(Depart);
 CoutEstimer = CalculHeuristique(Depart, Arriver);
 
 //Algo A* (A star)
-while(FileAttente.Count > 0)
+while (FileAttente.Count != 0)
 {
+    Console.WriteLine("nombre de cellule en file d'attente : " + FileAttente.Count);
+
     //Détermine quelle cellule est à traité en premier
-    CellATraite = DetermineCellPrioritaire(CoutEstimer,FileAttente);
+    CellATraite = DetermineCellPrioritaire(CoutEstimer, FileAttente);
 
     //Supprime la cellule en cours de traitement de la file d'attente
     FileAttente.Remove(CellATraite);
 
+    Console.WriteLine("Position de la cellule à traité :");
+    Console.WriteLine(CellATraite.GetY);
+    Console.WriteLine(CellATraite.GetX);
+    Console.WriteLine("---------------");
+
     //Si le programme atteint l'arriver
-    if (CellATraite.Equals(Arriver))
+    if ( (CellATraite.GetX == 7) && (CellATraite.GetY == 9))
     {
         Console.WriteLine("Le chemin le plus a été trouvé ! Le voici : \n");
         ReconstitutionChemin(CellATraite);
@@ -43,29 +50,34 @@ while(FileAttente.Count > 0)
     }
     else
     {
-
         ListVoisin = ParcoursVoisin(CellATraite, LeTerrain);
 
         if (ListVoisin.Count > 0)
         {
             foreach (Cellule CellVoisin in ListVoisin)
             {
-                if (!VoisinAccesPlusFaibleCout(CellVoisin, TabHistoriqueCout))
+                if (VoisinAccesPlusFaibleCout(CellVoisin, TabHistoriqueCout) == false)
                 {
                     //C'est pas plus faible
                     //Soit on a pas parcouru la cell soit le cout est de ce voisin est plus faible
 
+                    Console.WriteLine("Cellule voisine ajouté à la file d'attente: ");
+                    Console.WriteLine(CellVoisin.GetY);
+                    Console.WriteLine(CellVoisin.GetX);
+                    Console.WriteLine("---------------");
+
                     FileAttente.Add(CellVoisin);
-                    ListVoisin.Remove(CellVoisin);
+                    //ListVoisin.Remove(CellVoisin);
 
                     //La redéfinission de prédécesseur ce fait déjà car on recrée toujours de nouvelles cellules voisins même si l'a déjà parcourue
                     CellVoisin.GetParent = CellATraite;
                 }
                 else
                 {
-                    ListVoisin.Remove(CellVoisin);
+                    //ListVoisin.Remove(CellVoisin);
                 }
             }
+            ListVoisin.Clear();
         }
     }
 }
@@ -75,7 +87,7 @@ while(FileAttente.Count > 0)
 //Calcul le cout d'une cellule
 static int CalculCout(int CoutActuel, int ValeurCellule)
 {
-    return CoutActuel +1 + ValeurCellule;
+    return CoutActuel + 1 + ValeurCellule;
 }
 
 //Calcul la priorité d'une cellule
@@ -95,7 +107,7 @@ static int CalculHeuristique(Cellule Depart, Cellule Arriver)
 }
 
 //Liste tout les voisins autour de la cellule actuel
-List<Cellule> ParcoursVoisin(Cellule CellActuel, int[,]LeTerrain)
+List<Cellule> ParcoursVoisin(Cellule CellActuel, int[,] LeTerrain)
 {
     List<Cellule> ListVoisin = new List<Cellule>();
 
@@ -105,17 +117,37 @@ List<Cellule> ParcoursVoisin(Cellule CellActuel, int[,]LeTerrain)
     PositionX = CellActuel.GetX;
     PositionY = CellActuel.GetY;
 
-    //Vérification du voisin SUD
-    VerificationConditionChemin(LeTerrain,PositionX, PositionY - 1, CellActuel, ListVoisin);
+    if(PositionY - 1 > 0)
+    {
+        //Vérification du voisin SUD
+        ListVoisin = VerificationConditionChemin(LeTerrain, PositionX, PositionY - 1, CellActuel, ListVoisin);
+    }
+    
+    if (PositionY + 1 <= LeTerrain.GetLength(1))
+    {
+        //Vérification du voisin NORD
+        ListVoisin = VerificationConditionChemin(LeTerrain, PositionX, PositionY + 1, CellActuel, ListVoisin);
+    }
 
-    //Vérification du voisin NORD
-    VerificationConditionChemin(LeTerrain,PositionX, PositionY + 1, CellActuel, ListVoisin);
+    if(PositionX + 1 <= LeTerrain.GetLength(0))
+    {
+        //Vérification du voisin EST
+        ListVoisin = VerificationConditionChemin(LeTerrain, PositionX + 1, PositionY, CellActuel, ListVoisin);
+    }
+    
+    if(PositionX - 1 > 0)
+    {
+        //Vérification du voisin OUEST
+        ListVoisin = VerificationConditionChemin(LeTerrain, PositionX - 1, PositionY, CellActuel, ListVoisin);
+    }
 
-    //Vérification du voisin EST
-    VerificationConditionChemin(LeTerrain, PositionX + 1, PositionY, CellActuel, ListVoisin);
-
-    //Vérification du voisin OUEST
-    VerificationConditionChemin(LeTerrain, PositionX - 1, PositionY, CellActuel, ListVoisin);
+    /*
+    foreach(Cellule Cell in ListVoisin)
+    {
+        Console.WriteLine("Coordonnée des cellules voisines :");
+        Console.WriteLine(Cell.GetX);
+        Console.WriteLine(Cell.GetY);
+    }*/
 
     return ListVoisin;
 }
@@ -146,19 +178,54 @@ static bool VoisinAccesPlusFaibleCout(Cellule CellVoisin, int[,] TabHistoriqueCo
 }
 
 //Vérifie si la cellule est accessible (valeur non égale à -1)
-void VerificationConditionChemin(int[,] LeTerrain, int PositionX, int PositionY, Cellule CellActuel,List<Cellule> ListVoisin)
+List<Cellule> VerificationConditionChemin(int[,] LeTerrain, int PositionX, int PositionY, Cellule CellActuel, List<Cellule> ListVoisin)
 {
+
+    Cellule CellVoisin;
 
     if (LeTerrain[PositionX, PositionY] != -1)
     {
-        //Si le voisin n'est pas le prédécesseur de la cellule que nous traitons
-        if ((PositionX != CellActuel.GetParent.GetX) && (PositionY != CellActuel.GetParent.GetY))
+        if(CellActuel.GetX != 0 && CellActuel.GetY != 0)
         {
+            //Si le voisin n'est pas le prédécesseur de la cellule que nous traitons
+            if ((PositionX != CellActuel.GetParent.GetX) && (PositionY != CellActuel.GetParent.GetY))
+            {
+                //On crée la cellule selon les coordonnées du voisin avec le cout (cout = cout CelleActuel + 1 + la valeur du voisin (0,1,2,3))
+                CellVoisin = new Cellule(PositionX, PositionY, CalculCout(CellActuel.GetCout, LeTerrain[PositionX, PositionY]));
+
+                CellVoisin.GetX = PositionX;
+                CellVoisin.GetY = PositionY;
+
+                /*
+                Console.WriteLine("Cellule voisine trouvé :");
+                Console.WriteLine(CellVoisin.GetX);
+                Console.WriteLine(CellVoisin.GetY);
+                */
+
+                ListVoisin.Add(CellVoisin);
+            }
+        }
+        else
+        {
+            
             //On crée la cellule selon les coordonnées du voisin avec le cout (cout = cout CelleActuel + 1 + la valeur du voisin (0,1,2,3))
-            Cellule CellVoisin = new Cellule(PositionX, PositionY, CalculCout(CellActuel.GetCout, LeTerrain[PositionX, PositionY]));
+            CellVoisin = new Cellule(PositionX, PositionY, CalculCout(CellActuel.GetCout, LeTerrain[PositionX, PositionY]));
+
+            CellVoisin.GetX = PositionX;
+            CellVoisin.GetY = PositionY;
+
+            /*
+            Console.WriteLine("Cellule voisine trouvé :");
+            Console.WriteLine(CellVoisin.GetX);
+            Console.WriteLine(CellVoisin.GetY);
+            */
+
             ListVoisin.Add(CellVoisin);
+            
         }
     }
+
+    return ListVoisin;
 }
 
 //Détermine, parmis toutes les cellules à traité, la quelle est prioritaire
@@ -169,22 +236,22 @@ Cellule DetermineCellPrioritaire(int CoutEstimer, List<Cellule> FileAttente)
 
     CellMaxCout = FileAttente[0];
 
-    foreach(Cellule Cell in FileAttente)
+    foreach (Cellule Cell in FileAttente)
     {
-        if ( ( CalculProrite(Cell.GetCout,CoutEstimer) ) >= (CalculProrite(CellMaxCout.GetCout, CoutEstimer) ))
+        if ((CalculProrite(Cell.GetCout, CoutEstimer)) >= (CalculProrite(CellMaxCout.GetCout, CoutEstimer)))
         {
             CellMaxCout = Cell;
         }
     }
-    
-    return CellMaxCout; 
+
+    return CellMaxCout;
 }
 
 //Reconstitue le chemin
 static void ReconstitutionChemin(Cellule Cellule)
 {
     Console.Write("(" + Cellule.GetParent.GetX + "," + Cellule.GetParent.GetY + ")");
-    if(Cellule.GetParent != null)
+    if (Cellule.GetParent != null)
     {
         ReconstitutionChemin(Cellule.GetParent);
     }
@@ -195,7 +262,7 @@ static int[,] ConstructionTerrain()
 {
     int[,] Terrain;
 
-    Terrain =new int[,] {
+    Terrain = new int[,] {
         { 0,0,0,0,0,0,0,0,-1},
         { 0,0,1,2,2,0,0,-1,0},
         { 0,0,1,1,2,0,-1,0,0},
@@ -218,11 +285,13 @@ static int[,] CreationTabHistoriqueCout(int[,] LeTerrainBase)
     Nbligne = LeTerrainBase.GetLength(0);
     NbColonne = LeTerrainBase.GetLength(1);
 
+
+
     TabHistoriqueCout = new int[NbColonne, Nbligne];
 
-    for(int Ligne = 0; Ligne <= Nbligne; Ligne++)
+    for (int Ligne = 0; Ligne < Nbligne; Ligne++)
     {
-        for (int Colonne = 0; Colonne <= NbColonne; Colonne++)
+        for (int Colonne = 0; Colonne < NbColonne; Colonne++)
         {
             TabHistoriqueCout[Colonne, Ligne] = 0;
         }
